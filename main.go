@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"todolist.com/models"
 )
 
 func main() {
@@ -29,22 +30,61 @@ func main() {
 		}
 	}
 
+	data := []models.Todo{
+		models.NewTodo("item 1"),
+		models.NewTodo("item 2"),
+		models.NewTodo("item 3"),
+	}
+
+	itemsList := widget.NewList(
+		// function that returns the number of items in teh list
+		func() int {
+			return len(data)
+		},
+		// function that returns the component structure of the List Item
+		func() fyne.CanvasObject {
+			return container.NewBorder(
+				nil, nil, nil,
+				// "left" of the border
+				widget.NewCheck("", func(b bool) {}),
+				// takes the rest of the space
+				widget.NewLabel(""),
+			)
+		},
+		// function that is called for each item in the list and allows
+		// you to show the content on the previously defined ui structure
+		func(id widget.ListItemID, object fyne.CanvasObject) {
+			ctr, _ := object.(*fyne.Container)
+			lbl := ctr.Objects[0].(*widget.Label)
+			check := ctr.Objects[1].(*widget.Check)
+			lbl.SetText(data[id].Description)
+			check.SetChecked(data[id].Done)
+		},
+	)
+
 	w.SetContent(
 		container.NewBorder(
-			nil, // TOP of the container
-
+			// TOP
+			nil,
+			// BOTTOM
 			container.NewBorder(
-				nil, // TOP
-				nil, // BOTTOM
-				nil, // Left
-				// RIGHT ↓
+				// inner - top
+				nil,
+				// inner - bottom
+				nil,
+				// inner - left
+				nil,
+				// inner - right
 				addBtn,
-				// take the rest of the space
+				// inner - take the rest of the space
 				newTodoDescTxt,
 			),
-
+			// LEFT
 			nil,
+			// RIGHT
 			nil,
+			// TAKE THE REST OF THE SPACE
+			itemsList,
 		),
 	)
 	w.ShowAndRun()
