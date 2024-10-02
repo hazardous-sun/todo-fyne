@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"todolist.com/models"
 )
@@ -15,10 +16,29 @@ func main() {
 
 	w.Resize(fyne.NewSize(300, 400))
 
+	data := []models.Todo{
+		models.NewTodo("item 1"),
+		models.NewTodo("item 2"),
+		models.NewTodo("item 3"),
+	}
+
+	todos := binding.NewUntypedList()
+
+	for _, t := range data {
+		err := todos.Append(t)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	newTodoDescTxt := widget.NewEntry()
 	newTodoDescTxt.PlaceHolder = "New TODO Description..."
 	addBtn := widget.NewButton("Add", func() {
-		fmt.Println(newTodoDescTxt.Text + " needs to be added to the TODO list!")
+		if len(newTodoDescTxt.Text) > 0 {
+			todos.Append(models.NewTodo(newTodoDescTxt.Text))
+			newTodoDescTxt.Text = ""
+		}
 	})
 	addBtn.Disable()
 
@@ -30,35 +50,34 @@ func main() {
 		}
 	}
 
-	data := []models.Todo{
-		models.NewTodo("item 1"),
-		models.NewTodo("item 2"),
-		models.NewTodo("item 3"),
-	}
-
-	itemsList := widget.NewList(
-		// function that returns the number of items in teh list
-		func() int {
-			return len(data)
-		},
+	itemsList := widget.NewListWithData(
+		// the binding.List type
+		todos,
 		// function that returns the component structure of the List Item
 		func() fyne.CanvasObject {
 			return container.NewBorder(
 				nil, nil, nil,
 				// "left" of the border
-				widget.NewCheck("", func(b bool) {}),
+				widget.NewCheck("", func(b bool) {
+					if b {
+						fmt.Println("item checked")
+					} else {
+						fmt.Println("item not checked")
+					}
+				}),
 				// takes the rest of the space
 				widget.NewLabel(""),
 			)
 		},
 		// function that is called for each item in the list and allows
 		// you to show the content on the previously defined ui structure
-		func(id widget.ListItemID, object fyne.CanvasObject) {
+		func(di binding.DataItem, object fyne.CanvasObject) {
 			ctr, _ := object.(*fyne.Container)
 			lbl := ctr.Objects[0].(*widget.Label)
 			check := ctr.Objects[1].(*widget.Check)
-			lbl.SetText(data[id].Description)
-			check.SetChecked(data[id].Done)
+			todo := NewTodoFromDataItem(di)
+			lbl.SetText(todo.Description)
+			check.SetChecked(todo.Done)
 		},
 	)
 
@@ -88,4 +107,9 @@ func main() {
 		),
 	)
 	w.ShowAndRun()
+}
+
+func NewTodoFromDataItem(item binding.DataItem) models.Todo {
+	v, _ := item.(binding.Untyped).Get()
+	return v.(models.Todo)
 }
