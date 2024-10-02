@@ -50,6 +50,8 @@ func main() {
 		}
 	}
 
+	//var selectedItem binding.DataItem = nil
+
 	itemsList := widget.NewListWithData(
 		// the binding.List type
 		todos,
@@ -78,6 +80,10 @@ func main() {
 			todo := NewTodoFromDataItem(di)
 			lbl.SetText(todo.Description)
 			check.SetChecked(todo.Done)
+
+			// Mark the selected data item
+			//selectedItem = di
+			newTodoDescTxt.Text = todo.Description
 		},
 	)
 
@@ -87,12 +93,8 @@ func main() {
 			nil,
 			// BOTTOM
 			container.NewBorder(
-				// inner - top
-				nil,
-				// inner - bottom
-				nil,
-				// inner - left
-				nil,
+				nil, nil, nil,
+
 				// inner - right
 				addBtn,
 				// inner - take the rest of the space
