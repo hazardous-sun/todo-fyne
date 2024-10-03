@@ -61,14 +61,14 @@ func main() {
 		todos,
 		// function that returns the component structure of the List Item
 		func() fyne.CanvasObject {
+			lbl := widget.NewLabel("")
 			checkbox := widget.NewCheck("", func(b bool) {
 				if b {
-					fmt.Println("item checked")
+					fmt.Println("item checked", lbl.Text)
 				} else {
-					fmt.Println("item not checked")
+					fmt.Println("item not checked", lbl.Text)
 				}
 			})
-			lbl := widget.NewLabel("")
 			ctr := container.NewBorder(
 				nil, nil, nil,
 				// "left" of the border
