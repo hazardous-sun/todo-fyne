@@ -17,9 +17,9 @@ func main() {
 	w.Resize(fyne.NewSize(300, 400))
 
 	data := []models.Todo{
-		models.NewTodo("item 1"),
-		models.NewTodo("item 2"),
-		models.NewTodo("item 3"),
+		models.LoadTodo("item 1", false),
+		models.LoadTodo("item 2", true),
+		models.LoadTodo("item 3", false),
 	}
 
 	todos := binding.NewUntypedList()
