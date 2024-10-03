@@ -32,8 +32,11 @@ func main() {
 		}
 	}
 
+	// new item description
 	newTodoDescTxt := widget.NewEntry()
 	newTodoDescTxt.PlaceHolder = "New TODO Description..."
+
+	// add button
 	addBtn := widget.NewButton("Add", func() {
 		if len(newTodoDescTxt.Text) > 0 {
 			todos.Append(models.NewTodo(newTodoDescTxt.Text))
@@ -42,6 +45,7 @@ func main() {
 	})
 	addBtn.Disable()
 
+	// basic validation for the description
 	newTodoDescTxt.OnChanged = func(s string) {
 		addBtn.Disable()
 
@@ -50,26 +54,29 @@ func main() {
 		}
 	}
 
-	//var selectedItem binding.DataItem = nil
+	//var selectedItem binding.DataItem
 
 	itemsList := widget.NewListWithData(
 		// the binding.List type
 		todos,
 		// function that returns the component structure of the List Item
 		func() fyne.CanvasObject {
-			return container.NewBorder(
+			checkbox := widget.NewCheck("", func(b bool) {
+				if b {
+					fmt.Println("item checked")
+				} else {
+					fmt.Println("item not checked")
+				}
+			})
+			lbl := widget.NewLabel("")
+			ctr := container.NewBorder(
 				nil, nil, nil,
 				// "left" of the border
-				widget.NewCheck("", func(b bool) {
-					if b {
-						fmt.Println("item checked")
-					} else {
-						fmt.Println("item not checked")
-					}
-				}),
+				checkbox,
 				// takes the rest of the space
-				widget.NewLabel(""),
+				lbl,
 			)
+			return ctr
 		},
 		// function that is called for each item in the list and allows
 		// you to show the content on the previously defined ui structure
@@ -83,6 +90,7 @@ func main() {
 
 			// Mark the selected data item
 			//selectedItem = di
+			//fmt.Println(selectedItem)
 			newTodoDescTxt.Text = todo.Description
 		},
 	)
