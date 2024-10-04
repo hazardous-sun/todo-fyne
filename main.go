@@ -41,7 +41,7 @@ func run(data []models.Todo) {
 		}
 	}
 
-	itemsList := initializeItemsList(todos, newItemEntry)
+	itemsList := initializeItemsList(todos)
 
 	a := app.New()
 	w := a.NewWindow("TODO App")
@@ -107,7 +107,7 @@ func initializeNewItemEntry() *widget.Entry {
 	return newItemEntry
 }
 
-func initializeItemsList(todos binding.UntypedList, newItemEntry *widget.Entry) *widget.List {
+func initializeItemsList(todos binding.UntypedList) *widget.List {
 	return widget.NewListWithData(
 		// the binding.List type
 		todos,
