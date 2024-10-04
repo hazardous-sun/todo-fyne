@@ -4,7 +4,7 @@ import "fmt"
 
 type Todo struct {
 	Description string
-	Done        bool
+	Checked     bool
 }
 
 func NewTodo(description string) Todo {
@@ -19,5 +19,5 @@ func LoadTodo(description string, checked bool) Todo {
 }
 
 func (t Todo) String() string {
-	return fmt.Sprintf("{%s \t %t}", t.Description, t.Done)
+	return fmt.Sprintf("{%s \t %t}", t.Description, t.Checked)
 }

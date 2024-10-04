@@ -139,7 +139,7 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 			check := ctr.Objects[1].(*widget.Check)
 			todo := newTodoFromDataItem(di)
 			lbl.SetText(todo.Description)
-			check.SetChecked(todo.Done)
+			check.SetChecked(todo.Checked)
 		},
 	)
 }
