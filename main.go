@@ -11,6 +11,10 @@ import (
 )
 
 func main() {
+	run()
+}
+
+func run() {
 	// initialize test items
 	todos := initializeTestTodos()
 
@@ -31,7 +35,33 @@ func main() {
 
 	itemsList := initializeItemsList(todos, newItemEntry)
 
-	run(addBtn, newItemEntry, itemsList)
+	a := app.New()
+	w := a.NewWindow("TODO App")
+
+	w.Resize(fyne.NewSize(300, 400))
+
+	w.SetContent(
+		container.NewBorder(
+			// TOP
+			nil,
+			// BOTTOM
+			container.NewBorder(
+				nil, nil, nil,
+
+				// inner - right
+				addBtn,
+				// inner - take the rest of the space
+				newItemEntry,
+			),
+			// LEFT
+			nil,
+			// RIGHT
+			nil,
+			// TAKE THE REST OF THE SPACE
+			itemsList,
+		),
+	)
+	w.ShowAndRun()
 }
 
 func initializeTestTodos() binding.UntypedList {
@@ -57,11 +87,15 @@ func initializeTestTodos() binding.UntypedList {
 func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
 		if len(newItemEntry.Text) > 0 {
-			todos.Append(models.NewTodo(newItemEntry.Text))
+			err := todos.Append(models.NewTodo(newItemEntry.Text))
+
+			if err != nil {
+				return
+			}
+
 			newItemEntry.Text = ""
 		}
 	})
-	addBtn.Disable()
 	return addBtn
 }
 
@@ -103,41 +137,8 @@ func initializeItemsList(todos binding.UntypedList, newItemEntry *widget.Entry) 
 			todo := newTodoFromDataItem(di)
 			lbl.SetText(todo.Description)
 			check.SetChecked(todo.Done)
-
-			// Mark the selected data item
-			newItemEntry.Text = todo.Description
 		},
 	)
-}
-
-func run(btn *widget.Button, entry *widget.Entry, list *widget.List) {
-	a := app.New()
-	w := a.NewWindow("TODO App")
-
-	w.Resize(fyne.NewSize(300, 400))
-
-	w.SetContent(
-		container.NewBorder(
-			// TOP
-			nil,
-			// BOTTOM
-			container.NewBorder(
-				nil, nil, nil,
-
-				// inner - right
-				btn,
-				// inner - take the rest of the space
-				entry,
-			),
-			// LEFT
-			nil,
-			// RIGHT
-			nil,
-			// TAKE THE REST OF THE SPACE
-			list,
-		),
-	)
-	w.ShowAndRun()
 }
 
 func newTodoFromDataItem(item binding.DataItem) models.Todo {
