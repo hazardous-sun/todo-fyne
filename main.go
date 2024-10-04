@@ -11,11 +11,30 @@ import (
 )
 
 func main() {
-	a := app.New()
-	w := a.NewWindow("TODO App")
+	// initialize test items
+	todos := initializeTestTodos()
 
-	w.Resize(fyne.NewSize(300, 400))
+	// new item description
+	newItemEntry := initializeNewItemEntry()
 
+	// add button
+	addBtn := initializeAddBtn(newItemEntry, todos)
+
+	// basic validation for the description
+	newItemEntry.OnChanged = func(s string) {
+		addBtn.Disable()
+
+		if len(s) >= 3 {
+			addBtn.Enable()
+		}
+	}
+
+	itemsList := initializeItemsList(todos, newItemEntry)
+
+	run(addBtn, newItemEntry, itemsList)
+}
+
+func initializeTestTodos() binding.UntypedList {
 	data := []models.Todo{
 		models.LoadTodo("item 1", false),
 		models.LoadTodo("item 2", true),
@@ -32,31 +51,28 @@ func main() {
 		}
 	}
 
-	// new item description
-	newTodoDescTxt := widget.NewEntry()
-	newTodoDescTxt.PlaceHolder = "New TODO Description..."
+	return todos
+}
 
-	// add button
+func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
-		if len(newTodoDescTxt.Text) > 0 {
-			todos.Append(models.NewTodo(newTodoDescTxt.Text))
-			newTodoDescTxt.Text = ""
+		if len(newItemEntry.Text) > 0 {
+			todos.Append(models.NewTodo(newItemEntry.Text))
+			newItemEntry.Text = ""
 		}
 	})
 	addBtn.Disable()
+	return addBtn
+}
 
-	// basic validation for the description
-	newTodoDescTxt.OnChanged = func(s string) {
-		addBtn.Disable()
+func initializeNewItemEntry() *widget.Entry {
+	newItemEntry := widget.NewEntry()
+	newItemEntry.PlaceHolder = "New TODO Description..."
+	return newItemEntry
+}
 
-		if len(s) >= 3 {
-			addBtn.Enable()
-		}
-	}
-
-	//var selectedItem binding.DataItem
-
-	itemsList := widget.NewListWithData(
+func initializeItemsList(todos binding.UntypedList, newItemEntry *widget.Entry) *widget.List {
+	return widget.NewListWithData(
 		// the binding.List type
 		todos,
 		// function that returns the component structure of the List Item
@@ -84,16 +100,21 @@ func main() {
 			ctr, _ := object.(*fyne.Container)
 			lbl := ctr.Objects[0].(*widget.Label)
 			check := ctr.Objects[1].(*widget.Check)
-			todo := NewTodoFromDataItem(di)
+			todo := newTodoFromDataItem(di)
 			lbl.SetText(todo.Description)
 			check.SetChecked(todo.Done)
 
 			// Mark the selected data item
-			//selectedItem = di
-			//fmt.Println(selectedItem)
-			newTodoDescTxt.Text = todo.Description
+			newItemEntry.Text = todo.Description
 		},
 	)
+}
+
+func run(btn *widget.Button, entry *widget.Entry, list *widget.List) {
+	a := app.New()
+	w := a.NewWindow("TODO App")
+
+	w.Resize(fyne.NewSize(300, 400))
 
 	w.SetContent(
 		container.NewBorder(
@@ -104,22 +125,22 @@ func main() {
 				nil, nil, nil,
 
 				// inner - right
-				addBtn,
+				btn,
 				// inner - take the rest of the space
-				newTodoDescTxt,
+				entry,
 			),
 			// LEFT
 			nil,
 			// RIGHT
 			nil,
 			// TAKE THE REST OF THE SPACE
-			itemsList,
+			list,
 		),
 	)
 	w.ShowAndRun()
 }
 
-func NewTodoFromDataItem(item binding.DataItem) models.Todo {
+func newTodoFromDataItem(item binding.DataItem) models.Todo {
 	v, _ := item.(binding.Untyped).Get()
 	return v.(models.Todo)
 }
