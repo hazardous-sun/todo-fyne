@@ -47,11 +47,15 @@ func Create(client *supabase.Client, text string, check bool) {
 		"description": text,
 		"checked":     check,
 	}
-	client.From("todo").Insert(
+	_, _, err := client.From("todo").Insert(
 		todo,
 		false,
 		"ERROR",
 		"TEST",
 		"0",
 	).Execute()
+
+	if err != nil {
+		panic(err)
+	}
 }
