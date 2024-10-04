@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/supabase-community/supabase-go"
 	"todolist.com/models"
 )
@@ -18,9 +17,7 @@ func InitializeClient() *supabase.Client {
 }
 
 func Read(client *supabase.Client) []models.Todo {
-	data, count, err := client.From("todo").Select("*", "", false).Execute()
-
-	fmt.Println(count)
+	data, _, err := client.From("todo").Select("*", "", false).Execute()
 
 	if err != nil {
 		panic(err)
