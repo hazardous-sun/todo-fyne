@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
+	"github.com/supabase-community/supabase-go"
 	"todolist.com/database"
 	"todolist.com/models"
 )
@@ -15,14 +16,14 @@ func main() {
 	// Connect to the database client
 	dbClient := database.InitializeClient()
 
+	// Run the GUI application
+	run(dbClient)
+}
+
+func run(dbClient *supabase.Client) {
 	// Collect the existing values inside the database
 	data := database.Read(dbClient)
 
-	// Run the GUI application
-	run(data)
-}
-
-func run(data []models.Todo) {
 	// initialize test items
 	todos := initializeTestTodos(data)
 
@@ -89,7 +90,7 @@ func initializeTestTodos(data []models.Todo) binding.UntypedList {
 func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
 		if len(newItemEntry.Text) > 0 {
-			err := todos.Append(models.NewTodo(newItemEntry.Text))
+			err := todos.Append(models.NewTodo(newItemEntry.Text)) // TODO add a call to Create to send the new item to the DB
 
 			if err != nil {
 				return
