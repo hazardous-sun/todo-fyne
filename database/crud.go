@@ -51,9 +51,37 @@ func Create(client *supabase.Client, text string, check bool) {
 		todo,
 		false,
 		"ERROR",
-		"TEST",
+		"TEST CREATE",
 		"0",
 	).Execute()
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Update(client *supabase.Client, text string, check bool) {
+	todo := map[string]interface{}{
+		"description": text,
+		"checked":     check,
+	}
+	_, _, err := client.From("todo").Update(
+		todo,
+		"TEST UPDATE",
+		"0",
+	).Eq("description", text).Execute()
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Delete(client *supabase.Client, text string) {
+
+	_, _, err := client.From("todo").Delete(
+		"TEST DELETE",
+		"exact",
+	).Eq("description", text).Execute()
 
 	if err != nil {
 		panic(err)
