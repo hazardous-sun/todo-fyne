@@ -7,16 +7,24 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
+	"todolist.com/database"
 	"todolist.com/models"
 )
 
 func main() {
-	run()
+	// Connect to the database client
+	dbClient := database.InitializeClient()
+
+	// Collect the existing values inside the database
+	data := database.Select(dbClient)
+
+	// Run the GUI application
+	run(data)
 }
 
-func run() {
+func run(data []models.Todo) {
 	// initialize test items
-	todos := initializeTestTodos()
+	todos := initializeTestTodos(data)
 
 	// new item description
 	newItemEntry := initializeNewItemEntry()
@@ -64,13 +72,7 @@ func run() {
 	w.ShowAndRun()
 }
 
-func initializeTestTodos() binding.UntypedList {
-	data := []models.Todo{
-		models.LoadTodo("item 1", false),
-		models.LoadTodo("item 2", true),
-		models.LoadTodo("item 3", false),
-	}
-
+func initializeTestTodos(data []models.Todo) binding.UntypedList {
 	todos := binding.NewUntypedList()
 
 	for _, t := range data {
