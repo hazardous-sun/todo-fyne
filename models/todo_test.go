@@ -26,7 +26,7 @@ func TestLoadTodo(t *testing.T) {
 }
 
 func TestTodo_String(t *testing.T) {
-	expected := "test - false"
+	expected := "{test \t false}"
 	received := NewTodo("test").String()
 
 	if received != expected {

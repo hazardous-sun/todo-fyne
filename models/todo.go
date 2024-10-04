@@ -19,5 +19,5 @@ func LoadTodo(description string, checked bool) Todo {
 }
 
 func (t Todo) String() string {
-	return fmt.Sprintf("%s - %t", t.Description, t.Done)
+	return fmt.Sprintf("{%s \t %t}", t.Description, t.Done)
 }
