@@ -16,7 +16,7 @@ func main() {
 	dbClient := database.InitializeClient()
 
 	// Collect the existing values inside the database
-	data := database.Select(dbClient)
+	data := database.Read(dbClient)
 
 	// Run the GUI application
 	run(data)

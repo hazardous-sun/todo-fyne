@@ -17,7 +17,7 @@ func InitializeClient() *supabase.Client {
 	return client
 }
 
-func Select(client *supabase.Client) []models.Todo {
+func Read(client *supabase.Client) []models.Todo {
 	data, count, err := client.From("todo").Select("*", "", false).Execute()
 
 	fmt.Println(count)
