@@ -12,20 +12,27 @@ import (
 	"todolist.com/models"
 )
 
+var dbClient *supabase.Client
+var filters models.Filters
+var itemsList *widget.List
+var todos binding.UntypedList
+
 func main() {
 	// Connect to the database client
-	dbClient := database.InitializeClient()
+	dbClient = database.InitializeClient()
+
+	// Initialize filters
+	filters = models.NewFilters()
 
 	// Run the GUI application
-	run(dbClient)
+	run()
 }
 
-func run(dbClient *supabase.Client) {
-	// Collect the existing values inside the database
-	data := database.Read(dbClient)
+func run() {
+	todos := getTodos()
 
-	// initialize test items
-	todos := initializeTestTodos(data)
+	// container with the checkboxes for filtering the items
+	filtersCtr := initializeFilterCtr(&todos)
 
 	// new item description
 	newItemEntry := initializeNewItemEntry()
@@ -42,7 +49,8 @@ func run(dbClient *supabase.Client) {
 		}
 	}
 
-	itemsList := initializeItemsList(todos)
+	// list that holds the items to do
+	itemsList = initializeItemsList(todos)
 
 	a := app.New()
 	w := a.NewWindow("TODO App")
@@ -52,7 +60,7 @@ func run(dbClient *supabase.Client) {
 	w.SetContent(
 		container.NewBorder(
 			// TOP
-			nil,
+			filtersCtr,
 			// BOTTOM
 			container.NewBorder(
 				nil, nil, nil,
@@ -73,9 +81,16 @@ func run(dbClient *supabase.Client) {
 	w.ShowAndRun()
 }
 
-func initializeTestTodos(data []models.Todo) binding.UntypedList {
-	todos := binding.NewUntypedList()
+// data parsing --------------------------------------------------------------------------------------------------------
 
+func getTodos() binding.UntypedList {
+	// Collect the existing values inside the database
+	data := database.Read(dbClient, filters)
+
+	// Initialize list
+	todos = binding.NewUntypedList()
+
+	// Append values to list
 	for _, t := range data {
 		err := todos.Append(t)
 
@@ -87,10 +102,38 @@ func initializeTestTodos(data []models.Todo) binding.UntypedList {
 	return todos
 }
 
+func newTodoFromDataItem(item binding.DataItem) models.Todo {
+	v, _ := item.(binding.Untyped).Get()
+	return v.(models.Todo)
+}
+
+// widgets -------------------------------------------------------------------------------------------------------------
+
+func initializeFilterCtr(todos *binding.UntypedList) *fyne.Container {
+	return container.NewBorder(
+		nil, nil,
+		widget.NewCheck(
+			"Checked items",
+			func(b bool) {
+				filters.Checked = b
+				*todos = getTodos()
+			},
+		),
+		widget.NewCheck(
+			"Unchecked items",
+			func(b bool) {
+				filters.Unchecked = b
+				*todos = getTodos()
+			},
+		),
+	)
+}
+
 func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
 		if len(newItemEntry.Text) > 0 {
 			err := todos.Append(models.NewTodo(newItemEntry.Text)) // TODO add a call to Create to send the new item to the DB
+			database.Create(dbClient, newItemEntry.Text, false)
 
 			if err != nil {
 				return
@@ -115,13 +158,7 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 		// function that returns the component structure of the List Item
 		func() fyne.CanvasObject {
 			lbl := widget.NewLabel("")
-			checkbox := widget.NewCheck("", func(b bool) {
-				if b {
-					fmt.Println("item checked", lbl.Text)
-				} else {
-					fmt.Println("item not checked", lbl.Text)
-				}
-			})
+			checkbox := initializeCheckbox(lbl)
 			ctr := container.NewBorder(
 				nil, nil, nil,
 				// "left" of the border
@@ -144,7 +181,14 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 	)
 }
 
-func newTodoFromDataItem(item binding.DataItem) models.Todo {
-	v, _ := item.(binding.Untyped).Get()
-	return v.(models.Todo)
+func initializeCheckbox(lbl *widget.Label) *widget.Check {
+	return widget.NewCheck("", func(b bool) {
+		if b {
+			fmt.Println("item checked", lbl.Text)
+		} else {
+			fmt.Println("item not checked", lbl.Text)
+		}
+	})
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
