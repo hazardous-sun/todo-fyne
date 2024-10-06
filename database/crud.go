@@ -1,3 +1,5 @@
+// Package database :
+// Contains the CRUD functions for the project.
 package database
 
 import (
@@ -6,6 +8,9 @@ import (
 	"todolist.com/models"
 )
 
+// InitializeClient :
+// Returns an instance to the client of Supabase, that is used to run the CRUD functions.
+// It uses an API_URL and an API_SERVICE_KEY, that should be maintained inside the project.
 func InitializeClient() *supabase.Client {
 	client, err := supabase.NewClient(API_URL, API_SERVICE_KEY, &supabase.ClientOptions{})
 
@@ -16,6 +21,9 @@ func InitializeClient() *supabase.Client {
 	return client
 }
 
+// Read :
+// Returns an array of models.Todo with a selection of values from the database, based on the values of models.Filters.
+// It will select "*" when all values of models.Filters are true AND when all of the values are false.
 func Read(client *supabase.Client, filters models.Filters) []models.Todo {
 	flags := filters.GetFlags()
 	var data []byte
@@ -46,6 +54,7 @@ func Read(client *supabase.Client, filters models.Filters) []models.Todo {
 	return todos
 }
 
+// Parses the values received from the database into an array of models.Todo.
 func todoArrFromByteArr(arr []byte) []models.Todo {
 	var todos []models.Todo
 	err := json.Unmarshal(arr, &todos)
@@ -57,6 +66,8 @@ func todoArrFromByteArr(arr []byte) []models.Todo {
 	return todos
 }
 
+// Create :
+// Inserts a new value into the database.
 func Create(client *supabase.Client, text string, check bool) {
 	todo := map[string]interface{}{
 		"description": text,
@@ -75,6 +86,8 @@ func Create(client *supabase.Client, text string, check bool) {
 	}
 }
 
+// Update :
+// Updates the value of "checked" inside the database for the row that matches the description of the todo item.
 func Update(client *supabase.Client, text string, check bool) {
 	todo := map[string]interface{}{
 		"description": text,
@@ -91,6 +104,8 @@ func Update(client *supabase.Client, text string, check bool) {
 	}
 }
 
+// Delete :
+// Removes from the database the row that matches the description provided.
 func Delete(client *supabase.Client, text string) {
 
 	_, _, err := client.From("todo").Delete(
