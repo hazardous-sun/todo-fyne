@@ -32,7 +32,7 @@ func run() {
 	todos := getTodos()
 
 	// container with the checkboxes for filtering the items
-	filtersCtr := initializeFilterCtr(&todos)
+	filtersCtr := initializeFilterCtr()
 
 	// new item description
 	newItemEntry := initializeNewItemEntry()
@@ -107,23 +107,40 @@ func newTodoFromDataItem(item binding.DataItem) models.Todo {
 	return v.(models.Todo)
 }
 
+func getTodoFromList(lbl string) *models.Todo {
+	for i := 0; i < todos.Length(); i++ {
+		di, err := todos.GetItem(i)
+
+		if err != nil {
+			return nil
+		}
+
+		todo := newTodoFromDataItem(di)
+
+		if todo.Description == lbl {
+			return &todo
+		}
+	}
+	return nil
+}
+
 // widgets -------------------------------------------------------------------------------------------------------------
 
-func initializeFilterCtr(todos *binding.UntypedList) *fyne.Container {
+func initializeFilterCtr() *fyne.Container {
 	return container.NewBorder(
 		nil, nil,
 		widget.NewCheck(
 			"Checked items",
 			func(b bool) {
 				filters.Checked = b
-				*todos = getTodos()
+				fmt.Printf("Checked items = %v \n", b)
 			},
 		),
 		widget.NewCheck(
 			"Unchecked items",
 			func(b bool) {
 				filters.Unchecked = b
-				*todos = getTodos()
+				fmt.Printf("Unchecked items = %v \n", b)
 			},
 		),
 	)
@@ -183,11 +200,9 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 
 func initializeCheckbox(lbl *widget.Label) *widget.Check {
 	return widget.NewCheck("", func(b bool) {
-		if b {
-			fmt.Println("item checked", lbl.Text)
-		} else {
-			fmt.Println("item not checked", lbl.Text)
-		}
+		todo := getTodoFromList(lbl.Text)
+		todo.Checked = b
+		fmt.Printf("checkbox b = %v \t todo.Description = %v \n", b, todo.Description)
 	})
 }
 
