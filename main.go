@@ -17,6 +17,8 @@ var filters models.Filters
 var itemsList *widget.List
 var todos binding.UntypedList
 
+const MinimumDescriptionLen = 3
+
 func main() {
 	// Connect to the database client
 	dbClient = database.InitializeClient()
@@ -40,12 +42,17 @@ func run() {
 	// add button
 	addBtn := initializeAddBtn(newItemEntry, todos)
 
+	// del button
+	delBtn := initializeDelBtn(newItemEntry)
+
 	// basic validation for the description
 	newItemEntry.OnChanged = func(s string) {
 		addBtn.Disable()
+		delBtn.Disable()
 
-		if len(s) >= 3 {
+		if len(s) >= MinimumDescriptionLen {
 			addBtn.Enable()
+			delBtn.Enable()
 		}
 	}
 
@@ -63,7 +70,10 @@ func run() {
 			filtersCtr,
 			// BOTTOM
 			container.NewBorder(
-				nil, nil, nil,
+				nil, nil,
+
+				// inner - left
+				delBtn,
 
 				// inner - right
 				addBtn,
@@ -121,13 +131,13 @@ func getTodoFromList(lbl string) int {
 			return i
 		}
 	}
-	panic(fmt.Errorf("item not found in todos"))
+	return -1
 }
 
 // widgets -------------------------------------------------------------------------------------------------------------
 
 func initializeFilterCtr() *fyne.Container {
-	return container.NewBorder(
+	return container.NewBorder( // TODO fix the filter functions
 		nil, nil,
 		widget.NewCheck(
 			"Checked items",
@@ -148,7 +158,7 @@ func initializeFilterCtr() *fyne.Container {
 
 func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
-		if len(newItemEntry.Text) > 0 {
+		if getTodoFromList(newItemEntry.Text) == -1 {
 			err := todos.Append(models.NewTodo(newItemEntry.Text))
 			database.Create(dbClient, newItemEntry.Text, false)
 
@@ -166,6 +176,27 @@ func initializeNewItemEntry() *widget.Entry {
 	newItemEntry := widget.NewEntry()
 	newItemEntry.PlaceHolder = "New TODO Description..."
 	return newItemEntry
+}
+
+func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
+	delBtn := widget.NewButton("Delete", func() {
+		index := getTodoFromList(newItemEntry.Text)
+		if index != -1 {
+			fmt.Println("O ITEM EXISTE NA LISTA")
+			di, _ := todos.GetItem(index)
+			todo := newTodoFromDataItem(di)
+			err := todos.Remove(todo)
+
+			if err != nil {
+				panic(err)
+			}
+
+			database.Delete(dbClient, todo.Description)
+		} else {
+			fmt.Println("Item does not exist in the list.")
+		}
+	})
+	return delBtn
 }
 
 func initializeItemsList(todos binding.UntypedList) *widget.List {
