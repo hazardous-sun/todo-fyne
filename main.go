@@ -93,6 +93,7 @@ func run() {
 
 // data parsing --------------------------------------------------------------------------------------------------------
 
+// Reads from the database and returns an untyped list used to store the values of the items to do.
 func getTodos() binding.UntypedList {
 	// Collect the existing values inside the database
 	data := database.Read(dbClient, filters)
@@ -112,11 +113,14 @@ func getTodos() binding.UntypedList {
 	return todos
 }
 
+// Receives a data item from an untyped list and casts it to a models.Todo instance.
 func newTodoFromDataItem(item binding.DataItem) models.Todo {
 	v, _ := item.(binding.Untyped).Get()
 	return v.(models.Todo)
 }
 
+// Iterates over a bindings.UntypedList and returns the index that contains a models.Todo instance with the same
+// description of the string parameter passed.
 func getTodoFromList(lbl string) int {
 	for i := 0; i < todos.Length(); i++ {
 		di, err := todos.GetItem(i)
@@ -136,6 +140,7 @@ func getTodoFromList(lbl string) int {
 
 // widgets -------------------------------------------------------------------------------------------------------------
 
+// Initializes the container that holds the checkboxes for filtering the content displayed.
 func initializeFilterCtr() *fyne.Container {
 	return container.NewBorder( // TODO fix the filter functions
 		nil, nil,
@@ -156,6 +161,7 @@ func initializeFilterCtr() *fyne.Container {
 	)
 }
 
+// Initializes the button used for adding new elements to the list.
 func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
 		if getTodoFromList(newItemEntry.Text) == -1 {
@@ -172,12 +178,7 @@ func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *wi
 	return addBtn
 }
 
-func initializeNewItemEntry() *widget.Entry {
-	newItemEntry := widget.NewEntry()
-	newItemEntry.PlaceHolder = "New TODO Description..."
-	return newItemEntry
-}
-
+// Initializes the button used for removing elements from the list.
 func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
 	delBtn := widget.NewButton("Delete", func() {
 		index := getTodoFromList(newItemEntry.Text)
@@ -199,6 +200,14 @@ func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
 	return delBtn
 }
 
+// Initializes the text entry for typing the new item description.
+func initializeNewItemEntry() *widget.Entry {
+	newItemEntry := widget.NewEntry()
+	newItemEntry.PlaceHolder = "New TODO Description..."
+	return newItemEntry
+}
+
+// Initializes the list used for displaying the items to do.
 func initializeItemsList(todos binding.UntypedList) *widget.List {
 	return widget.NewListWithData(
 		// the binding.List type
@@ -229,6 +238,7 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 	)
 }
 
+// Initializes the checkboxes used for showing if the item is completed or not.
 func initializeCheckbox(lbl *widget.Label) *widget.Check {
 	return widget.NewCheck("", func(b bool) {
 		index := getTodoFromList(lbl.Text)
@@ -244,5 +254,3 @@ func initializeCheckbox(lbl *widget.Label) *widget.Check {
 		database.Update(dbClient, lbl.Text, b)
 	})
 }
-
-// ---------------------------------------------------------------------------------------------------------------------
