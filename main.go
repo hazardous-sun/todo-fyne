@@ -201,10 +201,15 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 func initializeCheckbox(lbl *widget.Label) *widget.Check {
 	return widget.NewCheck("", func(b bool) {
 		index := getTodoFromList(lbl.Text)
-		todos.SetValue(index, models.Todo{
-			Description: lbl.Text,
-			Checked:     b,
-		})
+		err := todos.SetValue(index, models.LoadTodo(
+			lbl.Text,
+			b,
+		))
+
+		if err != nil {
+			panic(err)
+		}
+
 		database.Update(dbClient, lbl.Text, b)
 	})
 }
