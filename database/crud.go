@@ -6,14 +6,14 @@ import (
 	"todolist.com/models"
 )
 
-func InitializeClient() (*supabase.Client, error) {
+func InitializeClient() *supabase.Client {
 	client, err := supabase.NewClient(API_URL, API_SERVICE_KEY, &supabase.ClientOptions{})
 
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return client, nil
+	return client
 }
 
 func Read(client *supabase.Client) []models.Todo {
