@@ -3,7 +3,7 @@ package models
 import "testing"
 
 func TestNewFilters(t *testing.T) {
-	expected := Filters{true, true}
+	expected := Filters{false, false}
 	received := NewFilters()
 	if received != expected {
 		t.Errorf("expected %v, got %v", received, expected)

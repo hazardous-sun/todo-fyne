@@ -9,8 +9,8 @@ type Filters struct {
 
 func NewFilters() Filters {
 	return Filters{
-		Checked:   true,
-		Unchecked: true,
+		Checked:   false,
+		Unchecked: false,
 	}
 }
 
