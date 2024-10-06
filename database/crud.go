@@ -16,8 +16,26 @@ func InitializeClient() *supabase.Client {
 	return client
 }
 
-func Read(client *supabase.Client) []models.Todo {
-	data, _, err := client.From("todo").Select("*", "", false).Execute()
+func Read(client *supabase.Client, filters models.Filters) []models.Todo {
+	flags := filters.GetFlags()
+	var data []byte
+	var err error
+	switch flags[0] {
+	case false:
+		switch flags[1] {
+		case false:
+			data, _, err = client.From("todo").Select("*", "", false).Execute()
+		case true:
+			data, _, err = client.From("todo").Select("*", "", false).Eq("checked", "false").Execute()
+		}
+	case true:
+		switch flags[1] {
+		case false:
+			data, _, err = client.From("todo").Select("*", "", false).Eq("checked", "true").Execute()
+		case true:
+			data, _, err = client.From("todo").Select("*", "", false).Execute()
+		}
+	}
 
 	if err != nil {
 		panic(err)
