@@ -149,7 +149,7 @@ func initializeFilterCtr() *fyne.Container {
 func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
 	addBtn := widget.NewButton("Add", func() {
 		if len(newItemEntry.Text) > 0 {
-			err := todos.Append(models.NewTodo(newItemEntry.Text)) // TODO add a call to Create to send the new item to the DB
+			err := todos.Append(models.NewTodo(newItemEntry.Text))
 			database.Create(dbClient, newItemEntry.Text, false)
 
 			if err != nil {
