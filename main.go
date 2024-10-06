@@ -107,21 +107,21 @@ func newTodoFromDataItem(item binding.DataItem) models.Todo {
 	return v.(models.Todo)
 }
 
-func getTodoFromList(lbl string) *models.Todo {
+func getTodoFromList(lbl string) int {
 	for i := 0; i < todos.Length(); i++ {
 		di, err := todos.GetItem(i)
 
 		if err != nil {
-			return nil
+			panic(err)
 		}
 
 		todo := newTodoFromDataItem(di)
 
 		if todo.Description == lbl {
-			return &todo
+			return i
 		}
 	}
-	return nil
+	panic(fmt.Errorf("item not found in todos"))
 }
 
 // widgets -------------------------------------------------------------------------------------------------------------
@@ -200,9 +200,12 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 
 func initializeCheckbox(lbl *widget.Label) *widget.Check {
 	return widget.NewCheck("", func(b bool) {
-		todo := getTodoFromList(lbl.Text)
-		todo.Checked = b
-		fmt.Printf("checkbox b = %v \t todo.Description = %v \n", b, todo.Description)
+		index := getTodoFromList(lbl.Text)
+		todos.SetValue(index, models.Todo{
+			Description: lbl.Text,
+			Checked:     b,
+		})
+		database.Update(dbClient, lbl.Text, b)
 	})
 }
 
