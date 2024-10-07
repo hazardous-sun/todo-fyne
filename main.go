@@ -31,6 +31,13 @@ func main() {
 }
 
 func run() {
+	// initialize the app and the initial window for the application
+	a := app.New()
+	w := a.NewWindow("TODO App")
+
+	w.Resize(fyne.NewSize(300, 400))
+
+	// collect the data from the DB
 	todos := getTodos()
 
 	// container with the checkboxes for filtering the items
@@ -59,11 +66,7 @@ func run() {
 	// list that holds the items to do
 	itemsList = initializeItemsList(todos)
 
-	a := app.New()
-	w := a.NewWindow("TODO App")
-
-	w.Resize(fyne.NewSize(300, 400))
-
+	// pass the values to the window
 	w.SetContent(
 		container.NewBorder(
 			// TOP
