@@ -302,9 +302,11 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 func initializeCheckbox(lbl *widget.Label) *widget.Check {
 	return widget.NewCheck("", func(b bool) {
 		index := getTodoFromList(lbl.Text)
+		di, _ := todos.GetItem(index)
+		todo := newTodoFromDataItem(di)
 		err := todos.SetValue(index, models.LoadTodo(
-			lbl.Text,
-			"",
+			todo.Title,
+			todo.Description,
 			b,
 		))
 
