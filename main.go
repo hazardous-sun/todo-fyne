@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/supabase-community/supabase-go"
 	"todolist.com/database"
@@ -61,11 +62,13 @@ func run() {
 	w.Resize(fyne.NewSize(300, 400))
 
 	// collect the data from the DB
-	todos, err := getTodos()
+	temp, err := getTodos()
 
 	if err != nil {
 		panic(err)
 	}
+
+	todos = temp
 
 	// container with the checkboxes for filtering the items
 	filtersCtr := initializeFilterCtr()
@@ -77,7 +80,7 @@ func run() {
 	//delBtn := initializeDelBtn(newItemEntry)
 
 	// list that holds the items to do
-	itemsList = initializeItemsList(todos)
+	itemsList = initializeItemsList()
 
 	// pass the values to the window
 	w.SetContent(
@@ -192,9 +195,16 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 		addBtn := widget.NewButton(
 			"Add",
 			func() {
-				_ = todos.Append(models.LoadTodo(titleEntry.Text, descEntry.Text, false))
-				database.Create(dbClient, titleEntry.Text, descEntry.Text, false)
-				w.Close()
+				err := database.Create(dbClient, titleEntry.Text, descEntry.Text, false)
+				if err == nil {
+					_ = todos.Append(models.LoadTodo(titleEntry.Text, descEntry.Text, false))
+					w.Close()
+				} else {
+					dialog.ShowError(
+						fmt.Errorf("Unable to add item to the database.\n"+err.Error()),
+						w,
+					)
+				}
 			},
 		)
 
@@ -268,7 +278,7 @@ func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
 }
 
 // Initializes the list used for displaying the items to do.
-func initializeItemsList(todos binding.UntypedList) *widget.List {
+func initializeItemsList() *widget.List {
 	return widget.NewListWithData(
 		// the binding.List type
 		todos,
@@ -292,7 +302,7 @@ func initializeItemsList(todos binding.UntypedList) *widget.List {
 			lbl := ctr.Objects[0].(*widget.Label)
 			check := ctr.Objects[1].(*widget.Check)
 			todo := newTodoFromDataItem(di)
-			lbl.SetText(todo.Description)
+			lbl.SetText(todo.Title)
 			check.SetChecked(todo.Checked)
 		},
 	)
