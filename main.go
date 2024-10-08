@@ -70,25 +70,11 @@ func run() {
 	// container with the checkboxes for filtering the items
 	filtersCtr := initializeFilterCtr()
 
-	// new item description
-	//newItemEntry := initializeNewItemEntry()
-
 	// add button
 	addBtn := initializeAddBtn(w)
 
 	// del button
 	//delBtn := initializeDelBtn(newItemEntry)
-
-	// basic validation for the description
-	//newItemEntry.OnChanged = func(s string) {
-	//	addBtn.Disable()
-	//	delBtn.Disable()
-	//
-	//	if len(s) >= MinimumDescriptionLen {
-	//		addBtn.Enable()
-	//		delBtn.Enable()
-	//	}
-	//}
 
 	// list that holds the items to do
 	itemsList = initializeItemsList(todos)
@@ -107,10 +93,8 @@ func run() {
 				nil,
 
 				// inner - right
-				addBtn,
-				// inner - take the rest of the space
-				//newItemEntry,
 				nil,
+				addBtn,
 			),
 			// LEFT
 			nil,
@@ -210,7 +194,6 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 			func() {
 				_ = todos.Append(models.LoadTodo(titleEntry.Text, descEntry.Text, false))
 				database.Create(dbClient, titleEntry.Text, descEntry.Text, false)
-				origin.Show()
 				w.Close()
 			},
 		)
@@ -250,6 +233,13 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 				innerCtr,
 			),
 		)
+
+		w.SetOnClosed(
+			func() {
+				origin.Show()
+			},
+		)
+
 		w.Show()
 		origin.Hide()
 	})
@@ -275,13 +265,6 @@ func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
 		}
 	})
 	return delBtn
-}
-
-// Initializes the text entry for typing the new item description.
-func initializeNewItemEntry() *widget.Entry {
-	newItemEntry := widget.NewEntry()
-	newItemEntry.PlaceHolder = "New TODO Description..."
-	return newItemEntry
 }
 
 // Initializes the list used for displaying the items to do.
