@@ -12,19 +12,14 @@ import (
 // Returns an instance to the client of Supabase, that is used to run the CRUD functions.
 // It uses an API_URL and an API_SERVICE_KEY, that should be maintained inside the project.
 func InitializeClient() *supabase.Client {
-	client, err := supabase.NewClient(API_URL, API_SERVICE_KEY, &supabase.ClientOptions{})
-
-	if err != nil {
-		panic(err)
-	}
-
+	client, _ := supabase.NewClient(API_URL, API_SERVICE_KEY, &supabase.ClientOptions{})
 	return client
 }
 
 // Read :
 // Returns an array of models.Todo with a selection of values from the database, based on the values of models.Filters.
 // It will select "*" when all values of models.Filters are true AND when all of the values are false.
-func Read(client *supabase.Client, filters models.Filters) []models.Todo {
+func Read(client *supabase.Client, filters models.Filters) ([]models.Todo, error) {
 	flags := filters.GetFlags()
 	var data []byte
 	var err error
@@ -46,12 +41,12 @@ func Read(client *supabase.Client, filters models.Filters) []models.Todo {
 	}
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	todos := todoArrFromByteArr(data)
 
-	return todos
+	return todos, nil
 }
 
 // Parses the values received from the database into an array of models.Todo.
