@@ -4,6 +4,7 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/supabase-community/supabase-go"
 	"todolist.com/models"
 )
@@ -63,7 +64,7 @@ func todoArrFromByteArr(arr []byte) []models.Todo {
 
 // Create :
 // Inserts a new value into the database.
-func Create(client *supabase.Client, title string, description string, check bool) {
+func Create(client *supabase.Client, title string, description string, check bool) error {
 	todo := map[string]interface{}{
 		"title":       title,
 		"description": description,
@@ -78,8 +79,11 @@ func Create(client *supabase.Client, title string, description string, check boo
 	).Execute()
 
 	if err != nil {
-		panic(err)
+		fmt.Println("error during insertion of value'", todo["title"], todo["description"], todo["checked"], "' to the database:", err)
+		return err
 	}
+
+	return nil
 }
 
 // Update :
