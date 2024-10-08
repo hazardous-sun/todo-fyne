@@ -63,9 +63,10 @@ func todoArrFromByteArr(arr []byte) []models.Todo {
 
 // Create :
 // Inserts a new value into the database.
-func Create(client *supabase.Client, text string, check bool) {
+func Create(client *supabase.Client, title string, description string, check bool) {
 	todo := map[string]interface{}{
-		"description": text,
+		"title":       title,
+		"description": description,
 		"checked":     check,
 	}
 	_, _, err := client.From("todo").Insert(
