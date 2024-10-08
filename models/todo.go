@@ -4,18 +4,18 @@ package models
 
 import "fmt"
 
-// Todo :
+// TodoItem :
 // A representation of an item in the list of things to do.
-type Todo struct {
+type TodoItem struct {
 	Title       string
 	Description string
 	Checked     bool
 }
 
-// LoadTodo :
+// LoadTodoItem :
 // Builds an item to do in the list, that could be either true OR false.
-func LoadTodo(title, description string, checked bool) Todo {
-	return Todo{
+func LoadTodoItem(title, description string, checked bool) TodoItem {
+	return TodoItem{
 		title,
 		description,
 		checked,
@@ -23,7 +23,7 @@ func LoadTodo(title, description string, checked bool) Todo {
 }
 
 // String :
-// Returns the formatted Todo instance as a string.
-func (t Todo) String() string {
+// Returns the formatted TodoItem instance as a string.
+func (t TodoItem) String() string {
 	return fmt.Sprintf("{'%s' \t '%s' \t %t}", t.Title, t.Description, t.Checked)
 }

@@ -18,9 +18,9 @@ func InitializeClient() *supabase.Client {
 }
 
 // Read :
-// Returns an array of models.Todo with a selection of values from the database, based on the values of models.Filters.
+// Returns an array of models.TodoItem with a selection of values from the database, based on the values of models.Filters.
 // It will select "*" when all values of models.Filters are true AND when all of the values are false.
-func Read(client *supabase.Client, filters models.Filters, table string) ([]models.Todo, error) {
+func Read(client *supabase.Client, filters models.Filters, table string) ([]models.TodoItem, error) {
 	flags := filters.GetFlags()
 	var data []byte
 	var err error
@@ -50,9 +50,9 @@ func Read(client *supabase.Client, filters models.Filters, table string) ([]mode
 	return todos, nil
 }
 
-// Parses the values received from the database into an array of models.Todo.
-func todoArrFromByteArr(arr []byte) []models.Todo {
-	var todos []models.Todo
+// Parses the values received from the database into an array of models.TodoItem.
+func todoArrFromByteArr(arr []byte) []models.TodoItem {
+	var todos []models.TodoItem
 	err := json.Unmarshal(arr, &todos)
 
 	if err != nil {
