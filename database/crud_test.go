@@ -8,13 +8,13 @@ import (
 func TestRead(t *testing.T) {
 	client := InitializeClient()
 	filter := models.NewFilters()
-	expected := []models.Todo{
-		models.Todo{
+	expected := []models.TodoItem{
+		models.TodoItem{
 			"item 1",
 			"test item 1",
 			false,
 		},
-		models.Todo{
+		models.TodoItem{
 			"item 2",
 			"test item 2",
 			true,

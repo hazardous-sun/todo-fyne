@@ -134,13 +134,13 @@ func getTodos() (binding.UntypedList, error) {
 	return todos, nil
 }
 
-// Receives appInstance data item from an untyped list and casts it to appInstance models.Todo instance.
-func newTodoFromDataItem(item binding.DataItem) models.Todo {
+// Receives appInstance data item from an untyped list and casts it to appInstance models.TodoItem instance.
+func newTodoFromDataItem(item binding.DataItem) models.TodoItem {
 	v, _ := item.(binding.Untyped).Get()
-	return v.(models.Todo)
+	return v.(models.TodoItem)
 }
 
-// Iterates over appInstance bindings.UntypedList and returns the index that contains appInstance models.Todo instance with the same
+// Iterates over appInstance bindings.UntypedList and returns the index that contains appInstance models.TodoItem instance with the same
 // description of the string parameter passed.
 func getTodoFromList(lbl string) int {
 	for i := 0; i < todos.Length(); i++ {
@@ -195,7 +195,7 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 			func() {
 				err := database.Create(dbClient, titleEntry.Text, descEntry.Text, false)
 				if err == nil {
-					_ = todos.Append(models.LoadTodo(titleEntry.Text, descEntry.Text, false))
+					_ = todos.Append(models.LoadTodoItem(titleEntry.Text, descEntry.Text, false))
 					w.Close()
 				} else {
 					dialog.ShowError(
@@ -255,9 +255,9 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 }
 
 // Initializes the button used for removing elements from the list.
-func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
+func initializeDelBtn(title string) *widget.Button {
 	delBtn := widget.NewButton("Delete", func() {
-		index := getTodoFromList(newItemEntry.Text)
+		index := getTodoFromList(title)
 		if index != -1 {
 			di, _ := todos.GetItem(index)
 			todo := newTodoFromDataItem(di)
@@ -312,7 +312,7 @@ func initializeCheckbox(lbl *widget.Label) *widget.Check {
 		index := getTodoFromList(lbl.Text)
 		di, _ := todos.GetItem(index)
 		todo := newTodoFromDataItem(di)
-		err := todos.SetValue(index, models.LoadTodo(
+		err := todos.SetValue(index, models.LoadTodoItem(
 			todo.Title,
 			todo.Description,
 			b,
