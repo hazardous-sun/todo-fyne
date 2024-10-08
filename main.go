@@ -19,8 +19,6 @@ var itemsList *widget.List
 var todos binding.UntypedList
 var appInstance fyne.App
 
-const MinimumDescriptionLen = 3
-
 func main() {
 	// Connect to the database client
 	dbClient = database.InitializeClient()
@@ -154,7 +152,7 @@ func getTodoFromList(lbl string) int {
 
 		todo := newTodoFromDataItem(di)
 
-		if todo.Description == lbl {
+		if todo.Title == lbl {
 			return i
 		}
 	}
@@ -269,7 +267,7 @@ func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
 				panic(err)
 			}
 
-			database.Delete(dbClient, todo.Description)
+			database.Delete(dbClient, todo.Title)
 		} else {
 			fmt.Println("Item does not exist in the list.")
 		}
@@ -324,6 +322,6 @@ func initializeCheckbox(lbl *widget.Label) *widget.Check {
 			panic(err)
 		}
 
-		database.Update(dbClient, lbl.Text, b)
+		database.Update(dbClient, todo.Title, b)
 	})
 }

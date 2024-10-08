@@ -88,16 +88,16 @@ func Create(client *supabase.Client, title string, description string, check boo
 
 // Update :
 // Updates the value of "checked" inside the database for the row that matches the description of the todo item.
-func Update(client *supabase.Client, text string, check bool) {
+func Update(client *supabase.Client, title string, check bool) {
 	todo := map[string]interface{}{
-		"description": text,
-		"checked":     check,
+		"title":   title,
+		"checked": check,
 	}
 	_, _, err := client.From("todo").Update(
 		todo,
 		"TEST UPDATE",
 		"0",
-	).Eq("description", text).Execute()
+	).Eq("title", title).Execute()
 
 	if err != nil {
 		panic(err)
@@ -106,12 +106,12 @@ func Update(client *supabase.Client, text string, check bool) {
 
 // Delete :
 // Removes from the database the row that matches the description provided.
-func Delete(client *supabase.Client, text string) {
+func Delete(client *supabase.Client, title string) {
 
 	_, _, err := client.From("todo").Delete(
 		"TEST DELETE",
 		"exact",
-	).Eq("description", text).Execute()
+	).Eq("title", title).Execute()
 
 	if err != nil {
 		panic(err)
