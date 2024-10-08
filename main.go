@@ -16,12 +16,20 @@ var dbClient *supabase.Client
 var filters models.Filters
 var itemsList *widget.List
 var todos binding.UntypedList
+var appInstance fyne.App
 
 const MinimumDescriptionLen = 3
 
 func main() {
 	// Connect to the database client
 	dbClient = database.InitializeClient()
+
+	if dbClient == nil {
+		panic(fmt.Errorf("failed to initialize db client"))
+	}
+
+	// initialize the app
+	appInstance = app.New()
 
 	// Initialize filters
 	filters = models.NewFilters()
@@ -30,15 +38,34 @@ func main() {
 	run()
 }
 
+// Loading screen ------------------------------------------------------------------------------------------------------
+
+func initializeLoadingScreen() fyne.Window {
+	w := appInstance.NewWindow("Loading app")
+	w.Resize(fyne.NewSize(300, 400))
+	loadingLayout := container.NewBorder(
+		widget.NewLabel("Connecting to the database..."),
+		widget.NewProgressBar(),
+		nil, nil,
+	)
+	w.SetContent(loadingLayout)
+	return w
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 func run() {
-	// initialize the app and the initial window for the application
-	a := app.New()
-	w := a.NewWindow("TODO App")
+	// initialize the window with items to do
+	w := appInstance.NewWindow("TODO App")
 
 	w.Resize(fyne.NewSize(300, 400))
 
 	// collect the data from the DB
-	todos := getTodos()
+	todos, err := getTodos()
+
+	if err != nil {
+		panic(err)
+	}
 
 	// container with the checkboxes for filtering the items
 	filtersCtr := initializeFilterCtr()
@@ -97,9 +124,13 @@ func run() {
 // data parsing --------------------------------------------------------------------------------------------------------
 
 // Reads from the database and returns an untyped list used to store the values of the items to do.
-func getTodos() binding.UntypedList {
+func getTodos() (binding.UntypedList, error) {
 	// Collect the existing values inside the database
-	data := database.Read(dbClient, filters)
+	data, err := database.Read(dbClient, filters)
+
+	if err != nil {
+		return nil, err
+	}
 
 	// Initialize list
 	todos = binding.NewUntypedList()
@@ -113,16 +144,16 @@ func getTodos() binding.UntypedList {
 		}
 	}
 
-	return todos
+	return todos, nil
 }
 
-// Receives a data item from an untyped list and casts it to a models.Todo instance.
+// Receives appInstance data item from an untyped list and casts it to appInstance models.Todo instance.
 func newTodoFromDataItem(item binding.DataItem) models.Todo {
 	v, _ := item.(binding.Untyped).Get()
 	return v.(models.Todo)
 }
 
-// Iterates over a bindings.UntypedList and returns the index that contains a models.Todo instance with the same
+// Iterates over appInstance bindings.UntypedList and returns the index that contains appInstance models.Todo instance with the same
 // description of the string parameter passed.
 func getTodoFromList(lbl string) int {
 	for i := 0; i < todos.Length(); i++ {
@@ -151,14 +182,12 @@ func initializeFilterCtr() *fyne.Container {
 			"Checked items",
 			func(b bool) {
 				filters.Checked = b
-				fmt.Printf("Checked items = %v \n", b)
 			},
 		),
 		widget.NewCheck(
 			"Unchecked items",
 			func(b bool) {
 				filters.Unchecked = b
-				fmt.Printf("Unchecked items = %v \n", b)
 			},
 		),
 	)
@@ -186,7 +215,6 @@ func initializeDelBtn(newItemEntry *widget.Entry) *widget.Button {
 	delBtn := widget.NewButton("Delete", func() {
 		index := getTodoFromList(newItemEntry.Text)
 		if index != -1 {
-			fmt.Println("O ITEM EXISTE NA LISTA")
 			di, _ := todos.GetItem(index)
 			todo := newTodoFromDataItem(di)
 			err := todos.Remove(todo)
