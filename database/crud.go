@@ -19,7 +19,7 @@ func InitializeClient() *supabase.Client {
 // Read :
 // Returns an array of models.Todo with a selection of values from the database, based on the values of models.Filters.
 // It will select "*" when all values of models.Filters are true AND when all of the values are false.
-func Read(client *supabase.Client, filters models.Filters) ([]models.Todo, error) {
+func Read(client *supabase.Client, filters models.Filters, table string) ([]models.Todo, error) {
 	flags := filters.GetFlags()
 	var data []byte
 	var err error
@@ -27,16 +27,16 @@ func Read(client *supabase.Client, filters models.Filters) ([]models.Todo, error
 	case false:
 		switch flags[1] {
 		case false:
-			data, _, err = client.From("todo").Select("*", "", false).Execute()
+			data, _, err = client.From(table).Select("*", "", false).Execute()
 		case true:
-			data, _, err = client.From("todo").Select("*", "", false).Eq("checked", "false").Execute()
+			data, _, err = client.From(table).Select("*", "", false).Eq("checked", "false").Execute()
 		}
 	case true:
 		switch flags[1] {
 		case false:
-			data, _, err = client.From("todo").Select("*", "", false).Eq("checked", "true").Execute()
+			data, _, err = client.From(table).Select("*", "", false).Eq("checked", "true").Execute()
 		case true:
-			data, _, err = client.From("todo").Select("*", "", false).Execute()
+			data, _, err = client.From(table).Select("*", "", false).Execute()
 		}
 	}
 
