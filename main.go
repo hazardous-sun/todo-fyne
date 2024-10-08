@@ -71,24 +71,24 @@ func run() {
 	filtersCtr := initializeFilterCtr()
 
 	// new item description
-	newItemEntry := initializeNewItemEntry()
+	//newItemEntry := initializeNewItemEntry()
 
 	// add button
-	addBtn := initializeAddBtn(newItemEntry, todos)
+	addBtn := initializeAddBtn(w)
 
 	// del button
-	delBtn := initializeDelBtn(newItemEntry)
+	//delBtn := initializeDelBtn(newItemEntry)
 
 	// basic validation for the description
-	newItemEntry.OnChanged = func(s string) {
-		addBtn.Disable()
-		delBtn.Disable()
-
-		if len(s) >= MinimumDescriptionLen {
-			addBtn.Enable()
-			delBtn.Enable()
-		}
-	}
+	//newItemEntry.OnChanged = func(s string) {
+	//	addBtn.Disable()
+	//	delBtn.Disable()
+	//
+	//	if len(s) >= MinimumDescriptionLen {
+	//		addBtn.Enable()
+	//		delBtn.Enable()
+	//	}
+	//}
 
 	// list that holds the items to do
 	itemsList = initializeItemsList(todos)
@@ -103,12 +103,14 @@ func run() {
 				nil, nil,
 
 				// inner - left
-				delBtn,
+				//delBtn,
+				nil,
 
 				// inner - right
 				addBtn,
 				// inner - take the rest of the space
-				newItemEntry,
+				//newItemEntry,
+				nil,
 			),
 			// LEFT
 			nil,
@@ -126,7 +128,7 @@ func run() {
 // Reads from the database and returns an untyped list used to store the values of the items to do.
 func getTodos() (binding.UntypedList, error) {
 	// Collect the existing values inside the database
-	data, err := database.Read(dbClient, filters)
+	data, err := database.Read(dbClient, filters, "todo")
 
 	if err != nil {
 		return nil, err
@@ -194,20 +196,64 @@ func initializeFilterCtr() *fyne.Container {
 }
 
 // Initializes the button used for adding new elements to the list.
-func initializeAddBtn(newItemEntry *widget.Entry, todos binding.UntypedList) *widget.Button {
-	addBtn := widget.NewButton("Add", func() {
-		if getTodoFromList(newItemEntry.Text) == -1 {
-			err := todos.Append(models.NewTodo(newItemEntry.Text))
-			database.Create(dbClient, newItemEntry.Text, false)
+func initializeAddBtn(origin fyne.Window) *widget.Button {
+	btn := widget.NewButton("Add", func() {
+		// initialize the new window
+		w := appInstance.NewWindow("Add item")
+		w.Resize(fyne.NewSize(300, 400))
 
-			if err != nil {
-				return
-			}
+		// initialize the widgets
+		titleEntry := widget.NewEntry()
+		descEntry := widget.NewEntry()
+		addBtn := widget.NewButton(
+			"Add",
+			func() {
+				_ = todos.Append(models.LoadTodo(titleEntry.Text, descEntry.Text, false))
+				database.Create(dbClient, titleEntry.Text, descEntry.Text, false)
+				origin.Show()
+				w.Close()
+			},
+		)
 
-			newItemEntry.Text = ""
-		}
+		// initialize the containers
+		titleCtr := container.NewBorder(
+			widget.NewLabel("Title:"),
+			nil,
+			nil,
+			nil,
+			titleEntry,
+		)
+
+		descCtr := container.NewBorder(
+			widget.NewLabel("Description:"),
+			nil,
+			nil,
+			nil,
+			descEntry,
+		)
+
+		innerCtr := container.NewBorder(
+			titleCtr,
+			nil,
+			nil,
+			nil,
+			descCtr,
+		)
+
+		// pass the content to the new window
+		w.SetContent(
+			container.NewBorder(
+				nil,
+				addBtn,
+				nil,
+				nil,
+				innerCtr,
+			),
+		)
+		w.Show()
+		origin.Hide()
 	})
-	return addBtn
+	return btn
 }
 
 // Initializes the button used for removing elements from the list.
@@ -275,6 +321,7 @@ func initializeCheckbox(lbl *widget.Label) *widget.Check {
 		index := getTodoFromList(lbl.Text)
 		err := todos.SetValue(index, models.LoadTodo(
 			lbl.Text,
+			"",
 			b,
 		))
 
