@@ -63,7 +63,7 @@ func run() {
 	w.CenterOnScreen()
 
 	// collect the data from the DB
-	temp, err := getTodos()
+	temp, err := initializeTodos()
 
 	if err != nil {
 		panic(err)
@@ -114,7 +114,7 @@ func run() {
 // data parsing --------------------------------------------------------------------------------------------------------
 
 // Reads from the database and returns an untyped list used to store the values of the items to do.
-func getTodos() (binding.UntypedList, error) {
+func initializeTodos() (binding.UntypedList, error) {
 	// Collect the existing values inside the database
 	data, err := database.Read(dbClient, filters, "todo")
 
@@ -124,6 +124,29 @@ func getTodos() (binding.UntypedList, error) {
 
 	// Initialize list
 	todos = binding.NewUntypedList()
+
+	// Append values to list
+	for _, t := range data {
+		err := todos.Append(t)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return todos, nil
+}
+
+func getTodos() (binding.UntypedList, error) {
+	// Collect the existing values inside the database
+	data, err := database.Read(dbClient, filters, "todo")
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize list
+	todos := binding.NewUntypedList()
 
 	// Append values to list
 	for _, t := range data {
@@ -172,6 +195,20 @@ func initializeFilterCtr() *fyne.Container {
 			"Checked items",
 			func(b bool) {
 				filters.Checked = b
+				fmt.Println("todos.Length() =", todos.Length())
+				for i := 0; i < todos.Length(); i++ {
+					di, _ := todos.GetItem(i)
+					todo := newTodoFromDataItem(di)
+					_ = todos.Remove(todo)
+				}
+				newDataItems, _ := getTodos()
+				fmt.Println("newDataItems.Length() =", newDataItems.Length())
+				for i := 0; i < newDataItems.Length(); i++ {
+					di, _ := newDataItems.GetItem(i)
+					todo := newTodoFromDataItem(di)
+					_ = todos.Append(todo)
+				}
+				fmt.Println("cabou-se")
 			},
 		),
 		widget.NewCheck(
