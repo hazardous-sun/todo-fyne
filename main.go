@@ -298,8 +298,11 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 		todo := newTodoFromDataItem(di)
 
 		// initialize the widgets
-		titleLbl := widget.NewLabel(todo.Title)
-		descLbl := widget.NewLabel(todo.Description)
+		titleEntry := widget.NewEntry()
+		titleEntry.Text = todo.Title
+		descEntry := widget.NewEntry()
+		descEntry.Text = todo.Description
+		editBtn := initializeEditBtn(w, titleEntry.Text, descEntry.Text, todo)
 		delBtn := initializeDelBtn(w, todo)
 
 		// initialize the containers
@@ -308,7 +311,7 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 			nil,
 			nil,
 			nil,
-			titleLbl,
+			titleEntry,
 		)
 
 		descCtr := container.NewBorder(
@@ -316,7 +319,7 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 			nil,
 			nil,
 			nil,
-			descLbl,
+			descEntry,
 		)
 
 		innerCtr := container.NewBorder(
@@ -327,11 +330,16 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 			descCtr,
 		)
 
+		btnsCtr := container.NewBorder(
+			nil, nil, nil,
+			delBtn, editBtn,
+		)
+
 		// pass the content to the new window
 		w.SetContent(
 			container.NewBorder(
 				nil,
-				delBtn,
+				btnsCtr,
 				nil,
 				nil,
 				innerCtr,
@@ -348,6 +356,17 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 		origin.Hide()
 	}
 	return list
+}
+
+// Initializes the button used for updating elements from the list.
+func initializeEditBtn(w fyne.Window, title string, description string, todo models.TodoItem) *widget.Button {
+	editBtn := widget.NewButton("Edit", func() {
+		todo.Title = title
+		todo.Description = description
+		database.Update(dbClient, title, description, todo.Checked)
+		w.Close()
+	})
+	return editBtn
 }
 
 // Initializes the button used for removing elements from the list.
@@ -376,6 +395,6 @@ func initializeCheckbox(lbl *widget.Label) *widget.Check {
 			panic(err)
 		}
 
-		database.Update(dbClient, todo.Title, b)
+		database.Update(dbClient, todo.Title, todo.Description, b)
 	})
 }
