@@ -13,6 +13,9 @@ import (
 	"todolist.com/models"
 )
 
+const WindowWidth = 300
+const WindowHeight = 400
+
 var dbClient *supabase.Client
 var filters models.Filters
 var itemsList *widget.List
@@ -41,7 +44,7 @@ func main() {
 
 func initializeLoadingScreen() fyne.Window {
 	w := appInstance.NewWindow("Loading app")
-	w.Resize(fyne.NewSize(300, 400))
+	w.Resize(fyne.NewSize(WindowWidth, WindowHeight))
 	loadingLayout := container.NewBorder(
 		widget.NewLabel("Connecting to the database..."),
 		widget.NewProgressBar(),
@@ -56,8 +59,8 @@ func initializeLoadingScreen() fyne.Window {
 func run() {
 	// initialize the window with items to do
 	w := appInstance.NewWindow("TODO App")
-
-	w.Resize(fyne.NewSize(300, 400))
+	w.Resize(fyne.NewSize(WindowWidth, WindowHeight))
+	w.CenterOnScreen()
 
 	// collect the data from the DB
 	temp, err := getTodos()
@@ -78,7 +81,7 @@ func run() {
 	//delBtn := initializeDelBtn(newItemEntry)
 
 	// list that holds the items to do
-	itemsList = initializeItemsList()
+	itemsList = initializeItemsList(w)
 
 	// pass the values to the window
 	w.SetContent(
@@ -185,7 +188,8 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 	btn := widget.NewButton("Add", func() {
 		// initialize the new window
 		w := appInstance.NewWindow("Add item")
-		w.Resize(fyne.NewSize(300, 400))
+		w.Resize(fyne.NewSize(WindowWidth, WindowHeight))
+		w.CenterOnScreen()
 
 		// initialize the widgets
 		titleEntry := widget.NewEntry()
@@ -251,6 +255,7 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 		w.Show()
 		origin.Hide()
 	})
+
 	return btn
 }
 
@@ -276,8 +281,8 @@ func initializeDelBtn(title string) *widget.Button {
 }
 
 // Initializes the list used for displaying the items to do.
-func initializeItemsList() *widget.List {
-	return widget.NewListWithData(
+func initializeItemsList(origin fyne.Window) *widget.List {
+	list := widget.NewListWithData(
 		// the binding.List type
 		todos,
 		// function that returns the component structure of the List Item
@@ -304,6 +309,65 @@ func initializeItemsList() *widget.List {
 			check.SetChecked(todo.Checked)
 		},
 	)
+	list.OnSelected = func(id widget.ListItemID) {
+		// initialize the new window
+		w := appInstance.NewWindow("Add item")
+		w.Resize(fyne.NewSize(WindowWidth, WindowHeight))
+		w.CenterOnScreen()
+
+		di, _ := todos.GetItem(id)
+		todo := newTodoFromDataItem(di)
+
+		// initialize the widgets
+		titleLbl := widget.NewLabel(todo.Title)
+		descLbl := widget.NewLabel(todo.Description)
+
+		// initialize the containers
+		titleCtr := container.NewBorder(
+			widget.NewLabel("Title:"),
+			nil,
+			nil,
+			nil,
+			titleLbl,
+		)
+
+		descCtr := container.NewBorder(
+			widget.NewLabel("Description:"),
+			nil,
+			nil,
+			nil,
+			descLbl,
+		)
+
+		innerCtr := container.NewBorder(
+			titleCtr,
+			nil,
+			nil,
+			nil,
+			descCtr,
+		)
+
+		// pass the content to the new window
+		w.SetContent(
+			container.NewBorder(
+				nil,
+				nil,
+				nil,
+				nil,
+				innerCtr,
+			),
+		)
+
+		w.SetOnClosed(
+			func() {
+				origin.Show()
+			},
+		)
+
+		w.Show()
+		origin.Hide()
+	}
+	return list
 }
 
 // Initializes the checkboxes used for showing if the item is completed or not.
