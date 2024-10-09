@@ -259,27 +259,6 @@ func initializeAddBtn(origin fyne.Window) *widget.Button {
 	return btn
 }
 
-// Initializes the button used for removing elements from the list.
-func initializeDelBtn(title string) *widget.Button {
-	delBtn := widget.NewButton("Delete", func() {
-		index := getTodoFromList(title)
-		if index != -1 {
-			di, _ := todos.GetItem(index)
-			todo := newTodoFromDataItem(di)
-			err := todos.Remove(todo)
-
-			if err != nil {
-				panic(err)
-			}
-
-			database.Delete(dbClient, todo.Title)
-		} else {
-			fmt.Println("Item does not exist in the list.")
-		}
-	})
-	return delBtn
-}
-
 // Initializes the list used for displaying the items to do.
 func initializeItemsList(origin fyne.Window) *widget.List {
 	list := widget.NewListWithData(
@@ -321,6 +300,7 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 		// initialize the widgets
 		titleLbl := widget.NewLabel(todo.Title)
 		descLbl := widget.NewLabel(todo.Description)
+		delBtn := initializeDelBtn(w, todo)
 
 		// initialize the containers
 		titleCtr := container.NewBorder(
@@ -351,7 +331,7 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 		w.SetContent(
 			container.NewBorder(
 				nil,
-				nil,
+				delBtn,
 				nil,
 				nil,
 				innerCtr,
@@ -368,6 +348,16 @@ func initializeItemsList(origin fyne.Window) *widget.List {
 		origin.Hide()
 	}
 	return list
+}
+
+// Initializes the button used for removing elements from the list.
+func initializeDelBtn(w fyne.Window, todo models.TodoItem) *widget.Button {
+	delBtn := widget.NewButton("Delete", func() {
+		_ = todos.Remove(todo)
+		database.Delete(dbClient, todo.Title)
+		w.Close()
+	})
+	return delBtn
 }
 
 // Initializes the checkboxes used for showing if the item is completed or not.
