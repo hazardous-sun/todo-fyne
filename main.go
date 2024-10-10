@@ -195,20 +195,17 @@ func initializeFilterCtr() *fyne.Container {
 			"Checked items",
 			func(b bool) {
 				filters.Checked = b
-				fmt.Println("todos.Length() =", todos.Length())
 				for i := 0; i < todos.Length(); i++ {
 					di, _ := todos.GetItem(i)
 					todo := newTodoFromDataItem(di)
 					_ = todos.Remove(todo)
 				}
 				newDataItems, _ := getTodos()
-				fmt.Println("newDataItems.Length() =", newDataItems.Length())
 				for i := 0; i < newDataItems.Length(); i++ {
 					di, _ := newDataItems.GetItem(i)
 					todo := newTodoFromDataItem(di)
 					_ = todos.Append(todo)
 				}
-				fmt.Println("cabou-se")
 			},
 		),
 		widget.NewCheck(
